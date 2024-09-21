@@ -293,13 +293,17 @@ class ImportTranslationsCommand extends Command
         $this->output->writeln('<info>*** Using dir ' . $dir . ' to lookup translation files. ***</info>');
 
         if (is_dir($dir)) {
-            $finder = new Finder();
-            $finder->files()
-                   ->name($this->getFileNamePattern($locales, $domains))
-                   ->in($dir);
+            return $this->createFinder($dir, $locales, $domains);
         }
 
-        return (null !== $finder && $finder->count() > 0) ? $finder : null;
+        $dir = str_replace('/Resources/translations', '/translations', $dir);
+        $this->output->writeln('<info>*** Using dir ' . $dir . ' to lookup translation files. ***</info>');
+
+        if (is_dir($dir)) {
+            return $this->createFinder($dir, $locales, $domains);
+        }
+
+        return null;
     }
 
     /**
@@ -316,5 +320,15 @@ class ImportTranslationsCommand extends Command
         }
 
         return $regex;
+    }
+
+    private function createFinder(string $dir, array $locales, array $domains): ?Finder
+    {
+        $finder = new Finder();
+        $finder->files()
+            ->name($this->getFileNamePattern($locales, $domains))
+            ->in($dir);
+
+        return (null !== $finder && $finder->count() > 0) ? $finder : null;
     }
 }
